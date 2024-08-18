@@ -1,3 +1,4 @@
+import time
 import unittest
 from token import EQUAL
 
@@ -139,8 +140,6 @@ class LumaTests(unittest.TestCase):
         nextButton = driver.find_element(By.XPATH, "//*[@class='button action continue primary']")
         nextButton.click()
 
-
-
         billingAddress = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='billing-address-details']")))
         placeOrderButton = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='action primary checkout']")))
         placeOrderButton.click()
@@ -150,6 +149,65 @@ class LumaTests(unittest.TestCase):
         checkoutChildren = checkoutObject.find_elements(By.TAG_NAME, "p")
 
         self.assertEqual("We'll email you an order confirmation with details and tracking info.", checkoutChildren[1].text)
+
+    def test_scenario_2(self):
+        driver = self.driver
+        driver.get("https://magento.softwaretestingboard.com/")
+
+        womensElement = driver.find_element(By.ID, "ui-id-4")
+        hover = ActionChains(driver).move_to_element(womensElement)
+        hover.perform()
+
+        bottomsElement = driver.find_element(By.ID, "ui-id-10")
+        hover = ActionChains(driver).move_to_element(bottomsElement)
+        hover.perform()
+
+        pantsElement = driver.find_element(By.ID, "ui-id-15")
+        pantsElement.click()
+
+        sorter = driver.find_element(By.ID, "sorter")
+        sorter.click()
+
+        options = sorter.find_elements(By.XPATH, ".//*")
+        for option in options:
+            if option.text == "Price":
+                option.click()
+
+        #counter qty _block-content-loading
+
+        lastCount = 0
+        for i in range(3):
+            listOfItems = driver.find_elements(By.XPATH, "//*[@class='item product product-item']")
+            listOfItems[i].click()
+
+            success = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "product-addtocart-button")))
+
+            sizeButton = driver.find_element(By.XPATH, "//*[@class='swatch-option text']")
+            sizeButton.click()
+            colorButton = driver.find_element(By.XPATH, "//*[@class='swatch-option color']")
+            colorButton.click()
+
+            addButton = driver.find_element(By.ID, "product-addtocart-button")
+            addButton.click()
+            time.sleep(2)
+
+            self.assertGreater(int(driver.find_element(By.CLASS_NAME, "counter-number").text), lastCount)
+            lastCount = int(driver.find_element(By.CLASS_NAME, "counter-number").text)
+
+            driver.back()
+
+        cartButton = driver.find_element(By.XPATH, "//*[@class='action showcart']")
+        cartButton.click()
+
+        deleteButton = driver.find_element(By.XPATH, "//*[@class='action delete']")
+        deleteButton.click()
+
+        success = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action-primary action-accept']")))
+        acceptButton = driver.find_element(By.XPATH, "//*[@class='action-primary action-accept']")
+        acceptButton.click()
+
+        checkoutButton = driver.find_element(By.XPATH, "//*[@class='action primary checkout']")
+        checkoutButton.click()
 
     def tearDown(self):
         self.driver.close()
