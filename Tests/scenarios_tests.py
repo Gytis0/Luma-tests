@@ -8,9 +8,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 
-# Add more comments / refactor
-# Add more driver waits
-# Add readme file
 class LumaTests(unittest.TestCase):
 
     def setUp(self):
@@ -19,7 +16,7 @@ class LumaTests(unittest.TestCase):
     def test_scenario_1(self):
         driver = self.driver
 
-        #Launch the site
+        #Open the site
         driver.get("https://magento.softwaretestingboard.com/")
 
         #Find the dropdown elements
@@ -36,8 +33,7 @@ class LumaTests(unittest.TestCase):
         hoodiesElement.click()
 
         #Find all displayed items
-        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='products list items product-items']")))
-        listOfItems = driver.find_element(By.XPATH, "//*[@class='products list items product-items']")
+        listOfItems = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='products list items product-items']")))
         allItems = listOfItems.find_elements(By.TAG_NAME, "li")
 
         selecter = driver.find_element(By.ID, "limiter")
@@ -58,8 +54,7 @@ class LumaTests(unittest.TestCase):
         frankieSweatshirt.click()
 
         #Select attributes
-        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "option-label-size-143-item-167")))
-        smallSizeButton = driver.find_element(By.ID, "option-label-size-143-item-167")
+        smallSizeButton = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "option-label-size-143-item-167")))
         smallSizeButton.click()
 
         yellowColourButton = driver.find_element(By.ID, "option-label-color-93-item-60")
@@ -73,9 +68,9 @@ class LumaTests(unittest.TestCase):
         #Add to cart
         addToCart = driver.find_element(By.ID, "product-addtocart-button")
         addToCart.click()
+        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
 
         #Assert that quantity of ordered items equals to the count of items in the cart
-        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
         self.assertEqual(driver.find_element(By.CLASS_NAME, "counter-number").text, quantityToOrder)
 
         #Open the details about the item
@@ -89,22 +84,20 @@ class LumaTests(unittest.TestCase):
         details = driver.find_element(By.XPATH, "//*[@class='product options list']")
         detailsInfo = details.find_elements(By.TAG_NAME, "dd")
 
-        #Assert that the details shown here match ones that were selected in the item page
+        #Assert that the details shown here match the ones that were selected in the item page
         self.assertEqual(detailsInfo[0].text, "S")
         self.assertEqual(detailsInfo[1].text, "Yellow")
 
         #Go to checkout
         checkoutButton = driver.find_element(By.ID, "top-cart-btn-checkout")
         checkoutButton.click()
-        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "customer-email")))
 
         #Fill the form
-        emailField = driver.find_element(By.ID, "customer-email")
+        emailField = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "customer-email")))
         emailField.clear()
         emailField.send_keys("testEmail@mail.com")
 
-        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "firstname")))
-        firstNameField = driver.find_element(By.NAME, "firstname")
+        firstNameField = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "firstname")))
         firstNameField.clear()
         firstNameField.send_keys("testFirstName")
 
@@ -140,20 +133,24 @@ class LumaTests(unittest.TestCase):
         nextButton = driver.find_element(By.XPATH, "//*[@class='button action continue primary']")
         nextButton.click()
 
-        billingAddress = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='billing-address-details']")))
-        placeOrderButton = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='action primary checkout']")))
+        #Wait for billing address to load so it wouldn't get in the way later
+        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='billing-address-details']")))
+        placeOrderButton = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action primary checkout']")))
         placeOrderButton.click()
 
-        checkoutSuccess = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
-        checkoutObject = driver.find_element(By.XPATH, "//*[@class='checkout-success']")
+        #Assert that the order was successful
+        checkoutObject = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
         checkoutChildren = checkoutObject.find_elements(By.TAG_NAME, "p")
 
         self.assertEqual("We'll email you an order confirmation with details and tracking info.", checkoutChildren[1].text)
 
     def test_scenario_2(self):
         driver = self.driver
+
+        #Open the site
         driver.get("https://magento.softwaretestingboard.com/")
 
+        #Navigate to women's pants section
         womensElement = driver.find_element(By.ID, "ui-id-4")
         hover = ActionChains(driver).move_to_element(womensElement)
         hover.perform()
@@ -165,20 +162,24 @@ class LumaTests(unittest.TestCase):
         pantsElement = driver.find_element(By.ID, "ui-id-15")
         pantsElement.click()
 
-        sorter = driver.find_element(By.ID, "sorter")
+        #Find and click sorter
+        sorter = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "sorter")))
         sorter.click()
 
+        #Sort by price
         options = sorter.find_elements(By.XPATH, ".//*")
         for option in options:
             if option.text == "Price":
                 option.click()
 
+        #Add 3 first items to the cart
         lastCount = 0
         for i in range(3):
+            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='item product product-item']")))
             listOfItems = driver.find_elements(By.XPATH, "//*[@class='item product product-item']")
             listOfItems[i].click()
 
-            success = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "product-addtocart-button")))
+            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "product-addtocart-button")))
 
             sizeButton = driver.find_element(By.XPATH, "//*[@class='swatch-option text']")
             sizeButton.click()
@@ -194,57 +195,56 @@ class LumaTests(unittest.TestCase):
 
             driver.back()
 
+        #Navigate to cart
         cartButton = driver.find_element(By.XPATH, "//*[@class='action showcart']")
         cartButton.click()
 
-        success = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action viewcart']")))
-        actionViewCart = driver.find_element(By.XPATH, "//*[@class='action viewcart']")
+        actionViewCart = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action viewcart']")))
         viewCheckout = actionViewCart.find_element(By.TAG_NAME, "span")
         viewCheckout.click()
 
-        success = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='products list items product-items']")))
-        allItems = driver.find_element(By.XPATH, "//*[@class='products list items product-items']")
+        #Find and navigate to the first suggested item
+        allItems = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='products list items product-items']")))
         options = allItems.find_elements(By.TAG_NAME, "li")
 
         options[0].find_element(By.TAG_NAME, "img").click()
 
-        success = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action primary tocart']")))
+        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action primary tocart']")))
+
+        #Choose size and color if the item has such options
         try:
             sizeButton = driver.find_element(By.XPATH, "//*[@class='swatch-option text']")
             sizeButton.click()
             colorButton = driver.find_element(By.XPATH, "//*[@class='swatch-option color']")
             colorButton.click()
         except:
-            print("Item does not have color or size options.")
+            print("Item does not have any color or size options.")
 
+        #Add to the cart
         addButton = driver.find_element(By.ID, "product-addtocart-button")
         addButton.click()
         WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
 
+        #Find and remove first item in the cart
         cartButton = driver.find_element(By.XPATH, "//*[@class='action showcart']")
         cartButton.click()
 
         deleteButton = driver.find_element(By.XPATH, "//*[@class='action delete']")
         deleteButton.click()
 
-        success = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action-primary action-accept']")))
+        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action-primary action-accept']")))
         acceptButton = driver.find_element(By.XPATH, "//*[@class='action-primary action-accept']")
         acceptButton.click()
 
-
-
+        #Go to checkout and fill out the forms
         checkoutButton = driver.find_element(By.XPATH, "//*[@class='action primary checkout']")
         checkoutButton.click()
 
-        success = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "customer-email")))
-
-        emailField = driver.find_element(By.ID, "customer-email")
+        emailField = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "customer-email")))
         emailField.clear()
         emailField.send_keys("testEmail@mail.com")
 
-        success = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "firstname")))
-
-        firstNameField = driver.find_element(By.NAME, "firstname")
+        firstNameField = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "firstname")))
         firstNameField.clear()
         firstNameField.send_keys("testFirstName")
 
@@ -274,8 +274,10 @@ class LumaTests(unittest.TestCase):
         phoneField.clear()
         phoneField.send_keys("testPhone")
 
-        shippingMethodRadio = driver.find_element(By.NAME, "ko_unique_2")
-        shippingMethodRadio.click()
+        #shippingMethodObject = driver.find_element(By.XPATH, "//*[@class='checkout-shipping-method-load']")
+        shippingMethodObject = driver.find_element(By.ID, "checkout-shipping-method-load")
+        shippingMethodRadio = shippingMethodObject.find_elements(By.XPATH, "//*[@class='radio']")
+        shippingMethodRadio[1].click()
 
         nextButton = driver.find_element(By.XPATH, "//*[@class='button action continue primary']")
         nextButton.click()
@@ -286,18 +288,10 @@ class LumaTests(unittest.TestCase):
             EC.visibility_of_element_located((By.XPATH, "//*[@class='action primary checkout']")))
         placeOrderButton.click()
 
-        checkoutSuccess = WebDriverWait(driver, 5).until(
-            EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
-        checkoutObject = driver.find_element(By.XPATH, "//*[@class='checkout-success']")
+        checkoutObject = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
         checkoutChildren = checkoutObject.find_elements(By.TAG_NAME, "p")
 
-        self.assertEqual("We'll email you an order confirmation with details and tracking info.",
-                         checkoutChildren[1].text)
-
-        checkoutSuccess = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
-        checkoutObject = driver.find_element(By.XPATH, "//*[@class='checkout-success']")
-        checkoutChildren = checkoutObject.find_elements(By.TAG_NAME, "p")
-
+        #Assert that the order was successful
         self.assertEqual("We'll email you an order confirmation with details and tracking info.",
                          checkoutChildren[1].text)
 
