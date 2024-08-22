@@ -1,7 +1,6 @@
 import unittest
 
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
@@ -33,7 +32,7 @@ class LumaTests(unittest.TestCase):
         hoodiesElement.click()
 
         #Find all displayed items
-        listOfItems = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='products list items product-items']")))
+        listOfItems = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='products list items product-items']")))
         allItems = listOfItems.find_elements(By.TAG_NAME, "li")
 
         selecter = driver.find_element(By.ID, "limiter")
@@ -54,10 +53,10 @@ class LumaTests(unittest.TestCase):
         frankieSweatshirt.click()
 
         #Select attributes
-        smallSizeButton = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "option-label-size-143-item-167")))
+        smallSizeButton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "option-label-size-143-item-167")))
         smallSizeButton.click()
 
-        yellowColourButton = driver.find_element(By.ID, "option-label-color-93-item-60")
+        yellowColourButton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "option-label-color-93-item-60")))
         yellowColourButton.click()
 
         quantityToOrder = "2"
@@ -68,7 +67,7 @@ class LumaTests(unittest.TestCase):
         #Add to cart
         addToCart = driver.find_element(By.ID, "product-addtocart-button")
         addToCart.click()
-        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
 
         #Assert that quantity of ordered items equals to the count of items in the cart
         self.assertEqual(driver.find_element(By.CLASS_NAME, "counter-number").text, quantityToOrder)
@@ -77,7 +76,7 @@ class LumaTests(unittest.TestCase):
         cartButton = driver.find_element(By.XPATH, "//*[@class='action showcart']")
         cartButton.click()
 
-        toggleButton = driver.find_element(By.XPATH, "//*[@class='toggle']")
+        toggleButton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='toggle']")))
         toggleButton.click()
 
         #Find the details
@@ -93,7 +92,7 @@ class LumaTests(unittest.TestCase):
         checkoutButton.click()
 
         #Fill the form
-        emailField = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "customer-email")))
+        emailField = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "customer-email")))
         emailField.clear()
         emailField.send_keys("testEmail@mail.com")
 
@@ -127,19 +126,20 @@ class LumaTests(unittest.TestCase):
         phoneField.clear()
         phoneField.send_keys("testPhone")
 
-        shippingMethodRadio = driver.find_element(By.NAME, "ko_unique_2")
-        shippingMethodRadio.click()
+        shippingMethodObject = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "checkout-shipping-method-load")))
+        shippingMethodRadio = shippingMethodObject.find_elements(By.XPATH, "//*[@class='radio']")
+        shippingMethodRadio[1].click()
 
         nextButton = driver.find_element(By.XPATH, "//*[@class='button action continue primary']")
         nextButton.click()
 
         #Wait for billing address to load so it wouldn't get in the way later
-        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='billing-address-details']")))
-        placeOrderButton = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action primary checkout']")))
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='billing-address-details']")))
+        placeOrderButton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action primary checkout']")))
         placeOrderButton.click()
 
         #Assert that the order was successful
-        checkoutObject = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
+        checkoutObject = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
         checkoutChildren = checkoutObject.find_elements(By.TAG_NAME, "p")
 
         self.assertEqual("We'll email you an order confirmation with details and tracking info.", checkoutChildren[1].text)
@@ -163,7 +163,7 @@ class LumaTests(unittest.TestCase):
         pantsElement.click()
 
         #Find and click sorter
-        sorter = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "sorter")))
+        sorter = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "sorter")))
         sorter.click()
 
         #Sort by price
@@ -175,21 +175,19 @@ class LumaTests(unittest.TestCase):
         #Add 3 first items to the cart
         lastCount = 0
         for i in range(3):
-            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='item product product-item']")))
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='base']")))
             listOfItems = driver.find_elements(By.XPATH, "//*[@class='item product product-item']")
             listOfItems[i].click()
 
-            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, "product-addtocart-button")))
-
-            sizeButton = driver.find_element(By.XPATH, "//*[@class='swatch-option text']")
+            sizeButton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='swatch-option text']")))
             sizeButton.click()
-            colorButton = driver.find_element(By.XPATH, "//*[@class='swatch-option color']")
+            colorButton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='swatch-option color']")))
             colorButton.click()
 
             addButton = driver.find_element(By.ID, "product-addtocart-button")
             addButton.click()
 
-            WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
+            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
             self.assertGreater(int(driver.find_element(By.CLASS_NAME, "counter-number").text), lastCount)
             lastCount = int(driver.find_element(By.CLASS_NAME, "counter-number").text)
 
@@ -199,17 +197,17 @@ class LumaTests(unittest.TestCase):
         cartButton = driver.find_element(By.XPATH, "//*[@class='action showcart']")
         cartButton.click()
 
-        actionViewCart = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action viewcart']")))
+        actionViewCart = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action viewcart']")))
         viewCheckout = actionViewCart.find_element(By.TAG_NAME, "span")
         viewCheckout.click()
 
         #Find and navigate to the first suggested item
-        allItems = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='products list items product-items']")))
+        allItems = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='products list items product-items']")))
         options = allItems.find_elements(By.TAG_NAME, "li")
 
         options[0].find_element(By.TAG_NAME, "img").click()
 
-        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action primary tocart']")))
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action primary tocart']")))
 
         #Choose size and color if the item has such options
         try:
@@ -223,7 +221,7 @@ class LumaTests(unittest.TestCase):
         #Add to the cart
         addButton = driver.find_element(By.ID, "product-addtocart-button")
         addButton.click()
-        WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='counter qty']")))
 
         #Find and remove first item in the cart
         cartButton = driver.find_element(By.XPATH, "//*[@class='action showcart']")
@@ -232,7 +230,7 @@ class LumaTests(unittest.TestCase):
         deleteButton = driver.find_element(By.XPATH, "//*[@class='action delete']")
         deleteButton.click()
 
-        WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action-primary action-accept']")))
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@class='action-primary action-accept']")))
         acceptButton = driver.find_element(By.XPATH, "//*[@class='action-primary action-accept']")
         acceptButton.click()
 
@@ -240,7 +238,7 @@ class LumaTests(unittest.TestCase):
         checkoutButton = driver.find_element(By.XPATH, "//*[@class='action primary checkout']")
         checkoutButton.click()
 
-        emailField = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.ID, "customer-email")))
+        emailField = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "customer-email")))
         emailField.clear()
         emailField.send_keys("testEmail@mail.com")
 
@@ -274,21 +272,20 @@ class LumaTests(unittest.TestCase):
         phoneField.clear()
         phoneField.send_keys("testPhone")
 
-        #shippingMethodObject = driver.find_element(By.XPATH, "//*[@class='checkout-shipping-method-load']")
-        shippingMethodObject = driver.find_element(By.ID, "checkout-shipping-method-load")
+        shippingMethodObject = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "checkout-shipping-method-load")))
         shippingMethodRadio = shippingMethodObject.find_elements(By.XPATH, "//*[@class='radio']")
         shippingMethodRadio[1].click()
 
         nextButton = driver.find_element(By.XPATH, "//*[@class='button action continue primary']")
         nextButton.click()
 
-        billingAddress = WebDriverWait(driver, 5).until(
+        billingAddress = WebDriverWait(driver, 10).until(
             EC.visibility_of_element_located((By.XPATH, "//*[@class='billing-address-details']")))
-        placeOrderButton = WebDriverWait(driver, 5).until(
+        placeOrderButton = WebDriverWait(driver, 10).until(
             EC.visibility_of_element_located((By.XPATH, "//*[@class='action primary checkout']")))
         placeOrderButton.click()
 
-        checkoutObject = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
+        checkoutObject = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@class='checkout-success']")))
         checkoutChildren = checkoutObject.find_elements(By.TAG_NAME, "p")
 
         #Assert that the order was successful
